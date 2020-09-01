@@ -8,4 +8,14 @@
   <artifactId>kfkadmin</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>14</maven.compiler.source>
+    <maven.compiler.target>14</maven.compiler.target>
+  </properties>
+
+  <modules>
+    <module>kluster</module>
+  </modules>
 </project>
