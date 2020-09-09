@@ -11,6 +11,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import java.util.Map;
 
 import static java.lang.System.err;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @EmbeddedKafka(count = 2, partitions = 3, topics = {"foo", "bar"})
 class KlusterTests {
@@ -32,7 +33,13 @@ class KlusterTests {
 
   @Test
   void testKlusterInfo() {
-    String clusterId = kluster.info().id();
-    err.println(clusterId);
+    var info = kluster.info();
+    var id = info.id();
+    var controller = info.controller();
+    var nodes = info.nodes();
+    err.println(id);
+    err.println(controller);
+    err.println(nodes);
+    assertTrue(nodes.contains(controller));
   }
 }
