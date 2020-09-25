@@ -1,4 +1,4 @@
-package su.ptx.kfkadmin.kluster;
+package su.ptx.kfkadmin.kluster_client;
 
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.Admin;
@@ -7,13 +7,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import su.ptx.kfkadmin.kluster.Kluster;
+import su.ptx.kfkadmin.kluster.Kluster.Topik;
+import su.ptx.kfkadmin.kluster.Kluster.Topik.Partition;
 
 import java.util.Map;
-import java.util.Set;
 
-import static java.lang.System.err;
-import static java.util.stream.Collectors.toSet;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @EmbeddedKafka(count = 2, partitions = 3, topics = {"foo", "bar"})
@@ -37,19 +37,22 @@ class KlusterTests {
   @Test
   void testKlusterInfo() {
     var info = kluster.info();
-    var id = info.id();
     var controller = info.controller();
     var nodes = info.nodes();
-    err.println(id);
-    err.println(controller);
-    err.println(nodes);
     assertTrue(nodes.contains(controller));
   }
 
   @Test
   void testTopiks() {
-    assertEquals(
-      Set.of("foo", "bar"),
-      kluster.topiks().stream().map(Kluster.Topik::name).collect(toSet()));
+    assertArrayEquals(
+      new String[]{"bar", "foo"},
+      kluster.topiks().stream().map(Topik::name).toArray());
+  }
+
+  @Test
+  void testPartitions() {
+    assertArrayEquals(
+      new int[]{0, 1, 2},
+      kluster.topik("foo").partitions().stream().mapToInt(Partition::id).toArray());
   }
 }
