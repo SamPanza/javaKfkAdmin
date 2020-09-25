@@ -9,8 +9,11 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
 import java.util.Map;
+import java.util.Set;
 
 import static java.lang.System.err;
+import static java.util.stream.Collectors.toSet;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @EmbeddedKafka(count = 2, partitions = 3, topics = {"foo", "bar"})
@@ -41,5 +44,12 @@ class KlusterTests {
     err.println(controller);
     err.println(nodes);
     assertTrue(nodes.contains(controller));
+  }
+
+  @Test
+  void testTopiks() {
+    assertEquals(
+      Set.of("foo", "bar"),
+      kluster.topiks().stream().map(Kluster.Topik::name).collect(toSet()));
   }
 }
