@@ -8,7 +8,7 @@ import su.ptx.kfkadmin.kluster.Kluster;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @EmbeddedKafka(partitions = 1)
-final class CreateThenRemoveTopikTests {
+final class CreateThenDeleteTopikTests {
   private static final Kluster KLUSTER = new KlusterSupplier().get();
 
   @AfterAll
@@ -17,9 +17,10 @@ final class CreateThenRemoveTopikTests {
   }
 
   @Test
-  void createThenRemove() {
+  void createThenDelete() {
     var foo = KLUSTER.createTopik("baz");
     assertTrue(KLUSTER.topiks().contains(foo));
-    //TODO remove topic
+    foo.delete();
+    assertTrue(KLUSTER.topiks().isEmpty());
   }
 }

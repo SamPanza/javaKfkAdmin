@@ -102,6 +102,11 @@ public final class Kluster implements AutoCloseable {
       return partitions().stream().mapToLong(Partition::size).sum();
     }
 
+    @SneakyThrows
+    public void delete() {
+      admin.deleteTopics(Set.of(name)).all().get();
+    }
+
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public final class Partition implements Comparable<Partition> {
       private final TopicPartitionInfo tpi;
