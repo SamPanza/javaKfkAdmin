@@ -6,12 +6,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.kafka.clients.admin.Admin;
+import org.apache.kafka.clients.admin.ListOffsetsResult;
+import org.apache.kafka.clients.admin.OffsetSpec;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toCollection;
 
 @RequiredArgsConstructor
@@ -68,6 +72,10 @@ public final class Kluster implements AutoCloseable {
         .collect(toCollection(TreeSet::new));
     }
 
+    public long size() {
+      return partitions().stream().mapToLong(Partition::size).sum();
+    }
+
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public final class Partition implements Comparable<Partition> {
       private final TopicPartitionInfo tpi;
@@ -79,6 +87,33 @@ public final class Kluster implements AutoCloseable {
 
       public int id() {
         return tpi.partition();
+      }
+
+      public long size() {
+        return latestOffset().value() - earliestOffset().value();
+      }
+
+      public Offset earliestOffset() {
+        return offset(OffsetSpec.earliest());
+      }
+
+      public Offset latestOffset() {
+        return offset(OffsetSpec.latest());
+      }
+
+      @SneakyThrows
+      private Offset offset(OffsetSpec spec) {
+        var tp = new TopicPartition(name, id());
+        return new Offset(admin.listOffsets(singletonMap(tp, spec)).all().get().get(tp));
+      }
+
+      @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+      public final class Offset {
+        private final ListOffsetsResult.ListOffsetsResultInfo lori;
+
+        public final long value() {
+          return lori.offset();
+        }
       }
     }
   }

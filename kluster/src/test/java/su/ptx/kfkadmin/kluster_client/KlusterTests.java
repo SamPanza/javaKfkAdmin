@@ -13,8 +13,7 @@ import su.ptx.kfkadmin.kluster.Kluster.Topik.Partition;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @EmbeddedKafka(count = 2, partitions = 3, topics = {"foo", "bar"})
 class KlusterTests {
@@ -54,5 +53,10 @@ class KlusterTests {
     assertArrayEquals(
       new int[]{0, 1, 2},
       kluster.topik("foo").partitions().stream().mapToInt(Partition::id).toArray());
+  }
+
+  @Test
+  void testTopikSize() {
+    assertEquals(0, kluster.topik("foo").size());
   }
 }
