@@ -10,12 +10,12 @@ import su.ptx.kfkadmin.kluster.Kluster.Topik.Partition;
 import static org.junit.jupiter.api.Assertions.*;
 
 @EmbeddedKafka(count = 2, partitions = 3, topics = {"foo", "bar"})
-class KlusterReadonlyTests {
-  private static final Kluster KLUSTER = KlusterHolder.init();
+final class KlusterReadonlyTests {
+  private static final Kluster KLUSTER = new KlusterSupplier().get();
 
   @AfterAll
-  static void afterAll() {
-    KlusterHolder.destroy();
+  static void closeKLUSTER() {
+    KLUSTER.close();
   }
 
   @Test

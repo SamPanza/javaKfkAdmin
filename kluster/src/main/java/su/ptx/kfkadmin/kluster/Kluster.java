@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
@@ -16,6 +17,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import static java.util.Collections.singletonMap;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
 
 @RequiredArgsConstructor
@@ -47,6 +49,30 @@ public final class Kluster implements AutoCloseable {
       .findFirst()
       //TODO specific exc, not NSEE
       .orElseThrow();
+  }
+
+  public Topik createTopik(String name) {
+    return createTopik(name, null, null);
+  }
+
+  public Topik createTopik(String name, int numPartitions) {
+    return createTopik(name, numPartitions, null);
+  }
+
+  public Topik createTopik(String name, int numPartitions, short replicationFactor) {
+    return createTopik(name, Integer.valueOf(numPartitions), Short.valueOf(replicationFactor));
+  }
+
+  @SneakyThrows
+  private Topik createTopik(String name, Integer numPartitions, Short replicationFactor) {
+    admin.createTopics(
+      Set.of(
+        new NewTopic(name,
+          ofNullable(numPartitions),
+          ofNullable(replicationFactor))))
+      .all()
+      .get();
+    return topik(name);
   }
 
   @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
