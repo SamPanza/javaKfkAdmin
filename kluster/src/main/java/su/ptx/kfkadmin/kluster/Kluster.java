@@ -9,9 +9,11 @@ import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.OffsetSpec;
+import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -118,6 +120,10 @@ public final class Kluster implements AutoCloseable {
 
       public int id() {
         return tpi.partition();
+      }
+
+      public List<Node> replicas() {
+        return tpi.replicas();
       }
 
       public long size() {
