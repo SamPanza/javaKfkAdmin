@@ -5,18 +5,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
-import org.apache.kafka.clients.admin.Admin;
-import org.apache.kafka.clients.admin.ListOffsetsResult;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.admin.OffsetSpec;
+import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
 
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Optional.ofNullable;
@@ -104,6 +98,10 @@ public final class Kluster implements AutoCloseable {
       return partitions().stream().mapToLong(Partition::size).sum();
     }
 
+    public long[] clear() {
+      return partitions().stream().mapToLong(Partition::clear).toArray();
+    }
+
     @SneakyThrows
     public void delete() {
       admin.deleteTopics(Set.of(name)).all().get();
@@ -130,6 +128,18 @@ public final class Kluster implements AutoCloseable {
         return latestOffset().value() - earliestOffset().value();
       }
 
+      @SneakyThrows
+      public long clear() {
+        return admin.deleteRecords(
+          Map.of(
+            topicPartition(),
+            RecordsToDelete.beforeOffset(latestOffset().value())))
+          .lowWatermarks()
+          .get(topicPartition())
+          .get()
+          .lowWatermark();
+      }
+
       public Offset earliestOffset() {
         return offset(OffsetSpec.earliest());
       }
@@ -140,8 +150,11 @@ public final class Kluster implements AutoCloseable {
 
       @SneakyThrows
       private Offset offset(OffsetSpec spec) {
-        var tp = new TopicPartition(name, id());
-        return new Offset(admin.listOffsets(singletonMap(tp, spec)).all().get().get(tp));
+        return new Offset(admin.listOffsets(singletonMap(topicPartition(), spec)).all().get().get(topicPartition()));
+      }
+
+      private TopicPartition topicPartition() {
+        return new TopicPartition(name, id());
       }
 
       @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
