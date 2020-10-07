@@ -6,30 +6,32 @@ import su.ptx.kfkadmin.kluster.Kluster.Topik.Partition;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-final class ReadonlyTests extends KlusterTests {
+final class BasicTests extends KlusterTests {
   @Test
-  void testKlusterInfo() {
+  void info_ok() {
     var info = kluster.info();
     assertEquals(2, info.nodes().size());
     assertTrue(info.nodes().contains(info.controller()));
   }
 
   @Test
-  void testTopiks() {
+  void topics_here_and_sorted(Topik t2, Topik t1) {
+    assertNotNull(t2);
+    assertNotNull(t1);
     assertArrayEquals(
-      new String[]{"bar", "foo"},
+      new String[]{"t1", "t2"},
       kluster.topiks().stream().map(Topik::name).toArray());
   }
 
   @Test
-  void testPartitions() {
+  void partitions_here_and_sorted(Topik t3) {
     assertArrayEquals(
       new int[]{0, 1, 2},
-      kluster.topik("foo").partitions().stream().mapToInt(Partition::id).toArray());
+      t3.partitions().stream().mapToInt(Partition::id).toArray());
   }
 
   @Test
-  void testTopikSize() {
-    assertEquals(0, kluster.topik("foo").size());
+  void new_topic_is_empty(Topik t4) {
+    assertEquals(0, t4.size());
   }
 }
